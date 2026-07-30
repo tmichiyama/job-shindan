@@ -159,6 +159,18 @@
   .dlg input{width:100%;padding:12px;font-size:1em;font-family:inherit;border:2px solid var(--line);border-radius:10px;margin-bottom:12px;}
   .dlg .row{display:flex;gap:10px;}
 
+  /* すべての仕事（相性順・51件） */
+  .allbtn{width:100%;margin-top:20px;}
+  .allwrap{display:none;margin-top:10px;}
+  .allwrap.open{display:block;}
+  .alllist{list-style:none;counter-reset:rk;margin:8px 0 0;padding:0;}
+  .alllist li{counter-increment:rk;display:grid;grid-template-columns:2.2em 1fr;gap:10px;padding:9px 2px;border-bottom:1px solid var(--pale);align-items:start;}
+  .alllist li::before{content:counter(rk);color:var(--main);font-weight:800;text-align:right;font-variant-numeric:tabular-nums;padding-top:1px;}
+  .ar-head{line-height:1.4;}
+  .ar-name{font-weight:700;}
+  .ar-cat{font-size:.68em;color:var(--main);background:var(--pale);border-radius:99px;padding:1px 9px;margin-left:7px;white-space:nowrap;}
+  .ar-desc{font-size:.82em;color:var(--sub);margin-top:1px;}
+
   .footer-mode{margin-top:26px;font-size:.72em;color:var(--sub);text-align:center;}
   .footer-mode a{color:var(--main-soft);}
   .credit{margin-top:10px;font-size:.7em;color:var(--sub);text-align:center;line-height:1.5;}
@@ -619,6 +631,22 @@ function renderResult(){
     html += `</div>`;
   }
 
+  // すべての仕事（相性順・51件）を隠して用意し、ボタンで開閉
+  let allRows = "";
+  ranked.forEach(r => {
+    allRows += `<li>
+      <div>
+        <div class="ar-head"><span class="ar-name">${esc(r.job.name)}</span><span class="ar-cat">${esc(r.job.cat)}</span></div>
+        <div class="ar-desc">${esc(r.job.desc)}</div>
+      </div>
+    </li>`;
+  });
+  html += `<button class="btn ghost allbtn" id="allBtn" aria-expanded="false">すべての仕事を見る（51件）▾</button>
+    <div class="allwrap" id="allWrap">
+      <h2>すべての仕事（相性順・51件）</h2>
+      <ol class="alllist">${allRows}</ol>
+    </div>`;
+
   // 注記
   html += `<p class="note">これは占いのようなものです。出なかった48個の中にも、あなたに合う仕事があります。</p>`;
 
@@ -645,6 +673,14 @@ function renderResult(){
   });
 
   document.getElementById("retryBtn").addEventListener("click", reset);
+  const allBtn = document.getElementById("allBtn");
+  allBtn.addEventListener("click", () => {
+    const wrap = document.getElementById("allWrap");
+    const open = wrap.classList.toggle("open");
+    allBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    allBtn.textContent = open ? "すべての仕事を閉じる ▴" : "すべての仕事を見る（51件）▾";
+    if (open) wrap.scrollIntoView({behavior:"smooth", block:"start"});
+  });
   if (AI){
     document.getElementById("aiBtn").addEventListener("click", () => onAskAI(profile, top, topAxisName));
   }
