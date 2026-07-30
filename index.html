@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>情報学・通信のお仕事診断</title>
+<style>
+  :root{
+    --main:#0f4c81;
+    --pale:#eef3f8;
+    --text:#1a1a1a;
+    --sub:#6b6b6b;
+    --main-soft:#3d6fa0;
+    --line:#d6e0ea;
+    --scale:1;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif;
+    color:var(--text);
+    background:#fff;
+    line-height:1.6;
+    font-size:calc(16px * var(--scale));
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:16px 18px calc(28px + env(safe-area-inset-bottom));
+    min-height:100vh;
+  }
+  /* 投影モード */
+  body.stage{--scale:1.8;}
+  body.stage .wrap{max-width:960px;}
+
+  h1{font-size:1.3em;color:var(--main);margin:.2em 0 .1em;line-height:1.35;}
+  .lead{color:var(--sub);font-size:.92em;margin:.2em 0 1.2em;}
+
+  /* 進捗 */
+  .topbar{margin-bottom:14px;}
+  .count{font-size:.85em;color:var(--sub);margin-bottom:6px;font-variant-numeric:tabular-nums;}
+  .bar{height:8px;background:var(--pale);border-radius:99px;overflow:hidden;}
+  .bar>i{display:block;height:100%;background:var(--main);width:0;transition:width .3s ease;}
+
+  .q-title{font-size:1.15em;font-weight:700;margin:6px 0 16px;line-height:1.4;}
+  .q-hint{font-size:.82em;color:var(--sub);font-weight:400;display:block;margin-top:4px;}
+
+  .choices{display:flex;flex-direction:column;gap:12px;}
+  .choice{
+    display:flex;align-items:center;gap:12px;
+    width:100%;text-align:left;
+    min-height:56px;padding:12px 16px;
+    background:var(--pale);
+    border:2px solid transparent;
+    border-radius:14px;
+    color:var(--text);
+    font-family:inherit;font-size:1em;line-height:1.4;
+    cursor:pointer;
+    transition:transform .08s ease,border-color .12s ease,background .12s ease;
+  }
+  .choice:active{transform:scale(.985);}
+  .choice .abc{
+    flex:none;
+    display:none;
+    align-items:center;justify-content:center;
+    width:1.9em;height:1.9em;
+    background:#fff;color:var(--main);
+    border:2px solid var(--main);
+    border-radius:50%;
+    font-weight:700;font-size:1em;
+  }
+  body.stage .choice .abc{display:inline-flex;}
+  .choice.sel{
+    border-color:var(--main);
+    background:#dbe8f4;
+  }
+  body.stage .choice.sel{
+    background:var(--main);color:#fff;
+    transform:scale(1.02);
+    box-shadow:0 6px 20px rgba(15,76,129,.25);
+  }
+  body.stage .choice.sel .abc{background:#fff;color:var(--main);border-color:#fff;}
+  .choice.sel .check{margin-left:auto;color:var(--main);font-weight:700;}
+  body.stage .choice.sel .check{color:#fff;}
+  .choice .check{display:none;}
+  .choice.sel .check{display:inline;}
+
+  .nav{display:flex;gap:12px;margin-top:22px;align-items:center;}
+  .btn{
+    font-family:inherit;font-size:1em;
+    padding:12px 18px;min-height:52px;
+    border-radius:12px;border:2px solid var(--main);
+    background:var(--main);color:#fff;font-weight:700;
+    cursor:pointer;transition:opacity .12s ease,background .12s ease;
+  }
+  .btn:active{opacity:.85;}
+  .btn.ghost{background:#fff;color:var(--main);}
+  .btn[disabled]{opacity:.35;cursor:default;}
+  .btn.grow{flex:1;}
+  .spacer{flex:1;}
+  .keyhint{font-size:.78em;color:var(--sub);margin-top:14px;text-align:center;}
+  body:not(.stage) .keyhint{display:none;}
+
+  /* 結果 */
+  .result h2{font-size:1.15em;color:var(--main);margin:26px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--pale);}
+  .result h2:first-child{margin-top:8px;}
+
+  .axes{display:flex;flex-direction:column;gap:9px;margin:6px 0 8px;}
+  .axis{display:grid;grid-template-columns:4.5em 1fr;gap:10px;align-items:center;}
+  .axis .name{font-size:.9em;color:var(--sub);}
+  .axis .track{background:var(--pale);border-radius:99px;height:16px;overflow:hidden;}
+  .axis .track>i{display:block;height:100%;background:var(--main);width:0;border-radius:99px;transition:width .6s ease;}
+  .axis.top .name{color:var(--main);font-weight:700;}
+  .axis.top .track>i{background:linear-gradient(90deg,var(--main),var(--main-soft));}
+  .summary{background:var(--pale);border-radius:12px;padding:12px 16px;margin:8px 0;font-weight:700;}
+
+  .job{
+    border:2px solid var(--line);border-radius:16px;
+    padding:14px 16px;margin:12px 0;
+    display:flex;gap:14px;align-items:flex-start;
+  }
+  .job .no{
+    flex:none;text-align:center;line-height:1.1;
+  }
+  .job .no .lbl{font-size:.62em;color:var(--sub);display:block;}
+  .job .no .num{font-size:2.1em;font-weight:800;color:var(--main);font-variant-numeric:tabular-nums;}
+  .job .body{flex:1;}
+  .job .jname{font-size:1.08em;font-weight:700;margin:0 0 2px;}
+  .job .cat{display:inline-block;font-size:.72em;color:var(--main);background:var(--pale);border-radius:99px;padding:2px 10px;margin-bottom:6px;}
+  .job .desc{font-size:.92em;margin:2px 0;}
+  .job .why{font-size:.82em;color:var(--sub);margin-top:6px;}
+  .job.hidden{border-style:dashed;border-color:var(--main-soft);background:#fbfdff;}
+  .hidden-lead{font-weight:700;color:var(--main);margin:22px 0 2px;}
+  .hidden-sub{font-size:.85em;color:var(--sub);margin:0 0 4px;}
+
+  .world-box{background:var(--pale);border-radius:12px;padding:12px 16px;margin:8px 0;}
+  .world-box p{margin:4px 0;font-weight:700;}
+
+  .callout{background:var(--pale);border-left:4px solid var(--main);border-radius:8px;padding:12px 16px;margin:14px 0;font-weight:700;}
+  .note{font-size:.82em;color:var(--sub);margin:16px 0;line-height:1.5;}
+
+  /* AI講評 */
+  .ai-box{border:2px solid var(--line);border-radius:16px;padding:14px 16px;margin:14px 0;}
+  .ai-box h3{margin:0 0 8px;font-size:1em;color:var(--main);}
+  .ai-text{white-space:pre-wrap;font-size:.95em;}
+  .skel{height:1em;background:linear-gradient(90deg,var(--pale),#dbe8f4,var(--pale));background-size:200% 100%;border-radius:6px;margin:8px 0;animation:sh 1.2s infinite;}
+  .skel.w80{width:80%;}.skel.w60{width:60%;}
+  @keyframes sh{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  .ai-err{color:#b23;font-size:.86em;margin-top:8px;}
+  .ai-note{font-size:.75em;color:var(--sub);margin-top:8px;}
+
+  dialog{border:none;border-radius:16px;padding:0;max-width:min(92vw,420px);box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  dialog::backdrop{background:rgba(0,0,0,.4);}
+  .dlg{padding:20px;}
+  .dlg h3{margin:0 0 8px;color:var(--main);}
+  .dlg p{font-size:.85em;color:var(--sub);margin:0 0 12px;}
+  .dlg input{width:100%;padding:12px;font-size:1em;font-family:inherit;border:2px solid var(--line);border-radius:10px;margin-bottom:12px;}
+  .dlg .row{display:flex;gap:10px;}
+
+  .footer-mode{margin-top:26px;font-size:.72em;color:var(--sub);text-align:center;}
+  .footer-mode a{color:var(--main-soft);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="app"></div>
+  <div class="footer-mode" id="modeFooter"></div>
+</div>
+
+<dialog id="keyDlg">
+  <div class="dlg">
+    <h3>AIキーの入力</h3>
+    <p>この端末（このタブ）だけで一時的に使います。タブを閉じると消えます。ソースコードには保存されません。</p>
+    <input id="keyInput" type="password" placeholder="APIキーを貼り付け" autocomplete="off">
+    <div class="row">
+      <button class="btn ghost grow" id="keyCancel">やめる</button>
+      <button class="btn grow" id="keyOk">これで進む</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   先生が差し替えやすい：質問（全12問）
+   各選択肢は {label, scores:{...}}。Q6は team、Q12は world を持つ。
+   ========================================================================= */
+const QUESTIONS = [
+  {
+    q:"休みの日、いちばんやりたいのは？",
+    choices:[
+      {label:"何かを組み立てたり作ったりする", scores:{make:2,express:1}},
+      {label:"気になったことをとことん調べる", scores:{analyze:2}},
+      {label:"友だちの相談にのる・段取りをする", scores:{connect:2}},
+      {label:"写真や動画、絵や音で表現する", scores:{express:2}},
+    ]
+  },
+  {
+    q:"グループ作業での自分の役回りは？",
+    choices:[
+      {label:"手を動かして形にする", scores:{make:2}},
+      {label:"情報を集めて整理する", scores:{analyze:2}},
+      {label:"全体の進み具合を見る", scores:{connect:2}},
+      {label:"見せ方や発表を考える", scores:{express:2}},
+    ]
+  },
+  {
+    q:"数字がびっしり並んだ表を見たとき",
+    choices:[
+      {label:"平均や傾向を計算したくなる", scores:{analyze:3}},
+      {label:"グラフにして見せたくなる", scores:{express:2,analyze:1}},
+      {label:"入力ミスや変なところを探したくなる", scores:{protect:3}},
+      {label:"自動で処理するプログラムを書きたくなる", scores:{make:2,analyze:1}},
+    ]
+  },
+  {
+    q:"スマホのアプリで、つい気になるのは？",
+    choices:[
+      {label:"どうやって動いているのか", scores:{make:2,analyze:1}},
+      {label:"自分の情報がどう守られているか", scores:{protect:3}},
+      {label:"なぜこのボタン配置なのか", scores:{express:2,connect:1}},
+      {label:"電波のない場所ではどうなるのか", scores:{connect:3}},
+    ]
+  },
+  {
+    q:"「ここが弱点だ」と気づくのは得意？",
+    choices:[
+      {label:"とても得意。抜け穴が気になる", scores:{protect:3}},
+      {label:"気づくけれど、直す方に興味がある", scores:{make:2,protect:1}},
+      {label:"気づいたら人に伝えて直したい", scores:{connect:2,express:1}},
+      {label:"どちらかといえば、良い所を伸ばしたい", scores:{express:2}},
+    ]
+  },
+  {
+    q:"ひとりの作業と、大勢での作業なら？",
+    choices:[
+      {label:"ひとりで没頭したい", scores:{}, team:0},
+      {label:"どちらかといえばひとり", scores:{}, team:1},
+      {label:"どちらかといえば大勢", scores:{}, team:3},
+      {label:"大勢でわいわい進めたい", scores:{}, team:4},
+    ]
+  },
+  {
+    q:"うまくいかないとき、原因の探し方は？",
+    choices:[
+      {label:"一つずつ試して切り分ける", scores:{analyze:2,protect:1}},
+      {label:"いったん作り直してみる", scores:{make:2}},
+      {label:"詳しい人に聞く・調べる", scores:{connect:1,analyze:1}},
+      {label:"記録を残して次に活かす", scores:{protect:2,connect:1}},
+    ]
+  },
+  {
+    q:"人に何かを教えるのは？",
+    choices:[
+      {label:"好き。分かってもらえると嬉しい", scores:{express:2,connect:2}},
+      {label:"まあ好き", scores:{connect:1}},
+      {label:"苦手。自分で進めたい", scores:{make:1}},
+      {label:"教えるより教わりたい", scores:{analyze:1}},
+    ]
+  },
+  {
+    q:"新しい機械やサービスが出たとき",
+    choices:[
+      {label:"まず触ってみる", scores:{make:2}},
+      {label:"仕組みや評判を調べる", scores:{analyze:2}},
+      {label:"安全なのか気になる", scores:{protect:2}},
+      {label:"誰の役に立つのか考える", scores:{connect:2,express:1}},
+    ]
+  },
+  {
+    q:"将来、仕事で大事にしたいのは？",
+    choices:[
+      {label:"自分の作ったものが動くこと", scores:{make:3}},
+      {label:"誰も気づかなかったことを見つけること", scores:{analyze:3}},
+      {label:"困っている人や場所を支えること", scores:{connect:3,protect:1}},
+      {label:"たくさんの人を楽しませること", scores:{express:3}},
+    ]
+  },
+  {
+    q:"好きな教科に近いのは？",
+    hint:"複数選べます（最大2つ）",
+    multi:true, max:2,
+    choices:[
+      {label:"数学", scores:{analyze:2}},
+      {label:"理科", scores:{analyze:1,make:1}},
+      {label:"情報・技術・家庭", scores:{make:2}},
+      {label:"美術・音楽", scores:{express:2}},
+      {label:"国語・英語", scores:{express:1,connect:1}},
+      {label:"社会", scores:{connect:2}},
+      {label:"体育", scores:{connect:1,make:1}},
+    ]
+  },
+  {
+    q:"好きな世界はどれ？",
+    hint:"複数選べます（最大2つ）／結果には影響を少しだけ",
+    multi:true, max:2, isWorld:true,
+    choices:[
+      "スポーツ","eスポーツ","ゲーム","音楽","アニメ・映画","ファッション",
+      "コンビニ・小売","食べ物・農業","医療・くすり","気象・防災","鉄道・交通",
+      "お金・銀行","宇宙・天文","教育","まちづくり・行政","どれでもない"
+    ].map(w=>({label:w, world:w, scores:{}}))
+  },
+];
+
+/* =========================================================================
+   職種データ（51件）v=[make, analyze, protect, connect, express]
+   ========================================================================= */
+const JOBS = [
+  {id:1,  name:"システムエンジニア（SE）", cat:"つくる", v:[3,1,1,2,1], team:3, worlds:[], desc:"全体を設計し開発をまとめる"},
+  {id:2,  name:"プログラマ", cat:"つくる", v:[3,1,0,1,0], team:1, worlds:[], desc:"設計をコードにして動かす"},
+  {id:3,  name:"Webエンジニア", cat:"つくる", v:[3,1,1,1,2], team:2, worlds:[], desc:"Webのサービスを作り上げる"},
+  {id:4,  name:"スマホアプリ開発者", cat:"つくる", v:[3,1,0,1,2], team:2, worlds:[], desc:"スマホで動くアプリを作る"},
+  {id:5,  name:"ゲームプログラマ", cat:"つくる", v:[3,1,0,0,2], team:2, worlds:["ゲーム"], desc:"ゲームの中身をプログラムする"},
+  {id:6,  name:"組込みエンジニア", cat:"つくる", v:[3,1,1,2,0], team:2, worlds:["鉄道・交通"], desc:"機械の中で動くソフトを作る"},
+  {id:7,  name:"ネットワークエンジニア", cat:"支える・つなぐ", v:[1,2,2,3,0], team:2, worlds:[], desc:"通信網を設計し支える"},
+  {id:8,  name:"インフラエンジニア", cat:"支える・つなぐ", v:[2,2,2,3,0], team:2, worlds:[], desc:"システムの土台を整える"},
+  {id:9,  name:"クラウドエンジニア", cat:"支える・つなぐ", v:[2,2,2,3,0], team:2, worlds:[], desc:"クラウド上の仕組みを作る"},
+  {id:10, name:"データベースエンジニア", cat:"支える・つなぐ", v:[2,3,2,2,0], team:1, worlds:[], desc:"大量のデータを整理し守る"},
+  {id:11, name:"社内SE", cat:"支える・つなぐ", v:[1,1,2,3,1], team:3, worlds:[], desc:"会社のIT全般を支える"},
+  {id:12, name:"テクニカルサポート", cat:"支える・つなぐ", v:[0,2,1,3,2], team:4, worlds:[], desc:"困った人を技術で助ける"},
+  {id:13, name:"セキュリティエンジニア", cat:"守る", v:[1,2,3,1,0], team:2, worlds:[], desc:"攻撃から守る仕組みを作る"},
+  {id:14, name:"ホワイトハッカー", cat:"守る", v:[2,3,3,0,0], team:0, worlds:[], desc:"弱点を先に見つけて防ぐ"},
+  {id:15, name:"SOCアナリスト", cat:"守る", v:[0,3,3,1,0], team:3, worlds:[], desc:"攻撃の兆候を見張る"},
+  {id:16, name:"デジタル鑑識", cat:"守る", v:[0,3,3,0,1], team:1, worlds:[], desc:"機器から証拠を調べ出す"},
+  {id:17, name:"データサイエンティスト", cat:"データを扱う", v:[1,3,0,1,2], team:2, worlds:[], desc:"データから答えを導く"},
+  {id:18, name:"データアナリスト", cat:"データを扱う", v:[0,3,0,1,2], team:2, worlds:["コンビニ・小売"], desc:"数字を分析して提案する"},
+  {id:19, name:"データエンジニア", cat:"データを扱う", v:[2,3,1,2,0], team:2, worlds:[], desc:"データの流れを作り整える"},
+  {id:20, name:"機械学習エンジニア", cat:"データを扱う", v:[2,3,0,0,1], team:1, worlds:[], desc:"AIに学ばせる仕組みを作る"},
+  {id:21, name:"AIエンジニア", cat:"データを扱う", v:[3,3,0,1,1], team:2, worlds:[], desc:"AIを設計し作り上げる"},
+  {id:22, name:"画像処理エンジニア", cat:"データを扱う", v:[2,3,0,0,2], team:1, worlds:["医療・くすり","宇宙・天文"], desc:"画像を解析する技術を作る"},
+  {id:23, name:"自然言語処理エンジニア", cat:"データを扱う", v:[2,3,0,1,1], team:1, worlds:["教育"], desc:"言葉をAIに扱わせる"},
+  {id:24, name:"スポーツアナリスト", cat:"データを扱う", v:[0,3,0,2,2], team:4, worlds:["スポーツ"], desc:"試合のデータを分析する"},
+  {id:25, name:"eスポーツアナリスト", cat:"データを扱う", v:[0,3,0,2,2], team:3, worlds:["eスポーツ","ゲーム"], desc:"eスポーツを数字で読む"},
+  {id:26, name:"基地局の設計者", cat:"通信", v:[2,2,1,3,0], team:2, worlds:[], desc:"スマホの電波網を設計する"},
+  {id:27, name:"光ファイバ網の設計者", cat:"通信", v:[2,2,1,3,0], team:2, worlds:[], desc:"高速通信の道を設計する"},
+  {id:28, name:"衛星通信技術者", cat:"通信", v:[2,3,1,3,0], team:2, worlds:["宇宙・天文"], desc:"宇宙経由の通信を支える"},
+  {id:29, name:"無線・電波の技術者", cat:"通信", v:[2,3,1,3,0], team:1, worlds:["宇宙・天文","気象・防災"], desc:"電波を上手に使う技術者"},
+  {id:30, name:"放送技術者", cat:"通信", v:[2,1,1,3,3], team:4, worlds:["アニメ・映画","スポーツ","音楽"], desc:"放送の映像と音を届ける"},
+  {id:31, name:"ゲームプランナー", cat:"エンタメをつくる", v:[1,2,0,2,3], team:4, worlds:["ゲーム"], desc:"面白いゲームを企画する"},
+  {id:32, name:"CGクリエイター", cat:"エンタメをつくる", v:[3,0,0,0,3], team:2, worlds:["アニメ・映画"], desc:"CGで映像や世界を作る"},
+  {id:33, name:"サウンドプログラマ", cat:"エンタメをつくる", v:[3,1,0,0,3], team:2, worlds:["音楽","ゲーム"], desc:"音を動かす仕組みを作る"},
+  {id:34, name:"VR / AR の開発者", cat:"エンタメをつくる", v:[3,1,0,1,3], team:2, worlds:["ゲーム","教育"], desc:"仮想・拡張の体験を作る"},
+  {id:35, name:"ライブ配信の技術者", cat:"エンタメをつくる", v:[2,1,1,3,3], team:4, worlds:["音楽","スポーツ"], desc:"配信を技術で支える"},
+  {id:36, name:"UI/UXデザイナー", cat:"デザイン・企画", v:[2,2,0,2,3], team:3, worlds:[], desc:"使いやすさをデザインする"},
+  {id:37, name:"Webデザイナー", cat:"デザイン・企画", v:[2,0,0,1,3], team:2, worlds:["ファッション"], desc:"Webの見た目をデザインする"},
+  {id:38, name:"プロダクトマネージャ", cat:"デザイン・企画", v:[1,2,1,3,3], team:4, worlds:[], desc:"製品の進む方向を決める"},
+  {id:39, name:"プロジェクトマネージャ", cat:"デザイン・企画", v:[0,2,2,3,2], team:4, worlds:[], desc:"開発の進行をまとめる"},
+  {id:40, name:"ITコンサルタント", cat:"デザイン・企画", v:[0,3,1,3,3], team:4, worlds:["お金・銀行"], desc:"ITで課題解決を助言する"},
+  {id:41, name:"デジタルマーケター", cat:"デザイン・企画", v:[0,3,0,2,3], team:3, worlds:["ファッション","コンビニ・小売","食べ物・農業"], desc:"ネットで商品を広める"},
+  {id:42, name:"ロボットエンジニア", cat:"動かす・組み合わせる", v:[3,2,1,1,1], team:2, worlds:["食べ物・農業"], desc:"ロボットを作り動かす"},
+  {id:43, name:"自動運転エンジニア", cat:"動かす・組み合わせる", v:[3,3,2,2,0], team:2, worlds:["鉄道・交通"], desc:"自動で走る車を作る"},
+  {id:44, name:"ドローン運用技術者", cat:"動かす・組み合わせる", v:[2,2,1,2,2], team:2, worlds:["気象・防災","食べ物・農業"], desc:"ドローンを使いこなす"},
+  {id:45, name:"スポーツテック開発者", cat:"動かす・組み合わせる", v:[3,2,0,2,2], team:2, worlds:["スポーツ"], desc:"技術でスポーツを進化させる"},
+  {id:46, name:"医療情報技師", cat:"社会の中で", v:[1,2,3,3,1], team:3, worlds:["医療・くすり"], desc:"病院のITを支える"},
+  {id:47, name:"GISスペシャリスト", cat:"社会の中で", v:[1,3,1,2,2], team:2, worlds:["気象・防災","まちづくり・行政"], desc:"地図データを活かす"},
+  {id:48, name:"農業ICT技術者", cat:"社会の中で", v:[2,2,1,3,1], team:2, worlds:["食べ物・農業"], desc:"ICTで農業を変える"},
+  {id:49, name:"自治体のデジタル職", cat:"社会の中で", v:[0,2,2,3,2], team:4, worlds:["まちづくり・行政"], desc:"行政をデジタルにする"},
+  {id:50, name:"高校「情報」の先生", cat:"社会の中で", v:[1,1,1,3,3], team:4, worlds:["教育"], desc:"情報の楽しさを教える"},
+  {id:51, name:"大学教員・研究者", cat:"社会の中で", v:[2,3,0,2,3], team:1, worlds:["宇宙・天文","教育"], desc:"新しい技術を研究する"},
+];
+
+/* 軸のキーと表示名 */
+const AXES = [
+  {key:"make",    name:"つくる"},
+  {key:"analyze", name:"しらべる"},
+  {key:"protect", name:"まもる"},
+  {key:"connect", name:"つなぐ"},
+  {key:"express", name:"つたえる"},
+];
+const AXIS_INDEX = {make:0, analyze:1, protect:2, connect:3, express:4};
+
+/* =========================================================================
+   状態とモード
+   ========================================================================= */
+const params = new URLSearchParams(location.search);
+const STAGE = params.get("mode") === "stage";
+const AI = params.get("ai") === "1";
+if (STAGE) document.body.classList.add("stage");
+
+const state = {
+  step: 0,               // 0..QUESTIONS.length-1 が設問、length で結果
+  answers: [],           // 単一:index / 複数:[index,...]
+};
+
+const app = document.getElementById("app");
+
+/* =========================================================================
+   スコア計算
+   ========================================================================= */
+function computeProfile(){
+  const vec = [0,0,0,0,0];
+  let team = 2; // 既定（未回答対策）
+  const worlds = [];
+  QUESTIONS.forEach((Q, qi) => {
+    const a = state.answers[qi];
+    if (a == null) return;
+    const idxs = Q.multi ? a : [a];
+    idxs.forEach(ci => {
+      const c = Q.choices[ci];
+      if (!c) return;
+      if (c.scores) for (const k in c.scores) vec[AXIS_INDEX[k]] += c.scores[k];
+      if (typeof c.team === "number") team = c.team;
+      if (Q.isWorld && c.world && c.world !== "どれでもない") worlds.push(c.world);
+    });
+  });
+  return {vec, team, worlds};
+}
+
+function cosine(a, b){
+  let dot=0, na=0, nb=0;
+  for (let i=0;i<a.length;i++){ dot+=a[i]*b[i]; na+=a[i]*a[i]; nb+=b[i]*b[i]; }
+  if (na===0 || nb===0) return 0;
+  return dot / (Math.sqrt(na)*Math.sqrt(nb));
+}
+
+function scoreJobs(profile){
+  return JOBS.map(job => {
+    let s = cosine(profile.vec, job.v);
+    s -= Math.abs(profile.team - job.team) / 4 * 0.10;
+    let worldHits = 0;
+    profile.worlds.forEach(w => { if (job.worlds.includes(w)) { s += 0.08; worldHits++; } });
+    return {job, score:s, worldHits};
+  }).sort((x,y) => y.score - x.score);
+}
+
+/* 上位3件はカテゴリを散らす。隠れた候補は 8〜15位からランダム1件。 */
+function pickResults(ranked){
+  const top = [];
+  const usedCats = new Set();
+  for (const r of ranked){
+    if (top.length >= 3) break;
+    if (usedCats.has(r.job.cat)) continue;
+    top.push(r);
+    usedCats.add(r.job.cat);
+  }
+  // カテゴリ多様化で3件に届かない場合の保険
+  if (top.length < 3){
+    for (const r of ranked){
+      if (top.length >= 3) break;
+      if (top.includes(r)) continue;
+      top.push(r);
+    }
+  }
+  // 隠れた候補：8〜15位（index 7..14）から、上位3件と別のものを1つ
+  const poolRaw = ranked.slice(7, 15).filter(r => !top.includes(r));
+  const pool = poolRaw.length ? poolRaw : ranked.filter(r => !top.includes(r));
+  const hidden = pool.length ? pool[Math.floor(Math.random()*pool.length)] : null;
+  return {top, hidden};
+}
+
+/* この職種がなぜ出たか：ユーザーと職種の両方で高い軸を1〜2個 */
+function reasonFor(profile, job){
+  const contrib = AXES.map((ax, i) => ({name:ax.name, c: profile.vec[i]*job.v[i], u:profile.vec[i]}));
+  const picked = contrib.filter(x => x.c > 0).sort((a,b)=>b.c-a.c).slice(0,2).map(x=>x.name);
+  if (picked.length === 0) return "回答の傾向がこの仕事と近いから";
+  if (picked.length === 1) return `「${picked[0]}」が高いから`;
+  return `「${picked[0]}」と「${picked[1]}」が高いから`;
+}
+
+/* =========================================================================
+   描画：設問
+   ========================================================================= */
+function render(){
+  if (state.step >= QUESTIONS.length){ renderResult(); updateFooter(); return; }
+  const qi = state.step;
+  const Q = QUESTIONS[qi];
+  const ans = state.answers[qi];
+  const total = QUESTIONS.length;
+  const pct = Math.round((qi) / total * 100);
+
+  let html = `
+    <div class="topbar">
+      <div class="count">${qi+1} / ${total}</div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+    </div>
+    <div class="q-title">Q${qi+1}. ${esc(Q.q)}${Q.hint?`<span class="q-hint">${esc(Q.hint)}</span>`:""}</div>
+    <div class="choices">`;
+
+  Q.choices.forEach((c, ci) => {
+    const selected = Q.multi ? (Array.isArray(ans) && ans.includes(ci)) : (ans === ci);
+    const abc = "ABCD"[ci] || "";
+    html += `<button class="choice${selected?" sel":""}" data-ci="${ci}">
+      <span class="abc">${abc}</span>
+      <span class="txt">${esc(c.label)}</span>
+      <span class="check">✓</span>
+    </button>`;
+  });
+  html += `</div>`;
+
+  // ナビ
+  const canNext = Q.multi ? true : (ans != null);
+  html += `<div class="nav">
+    <button class="btn ghost" id="backBtn" ${qi===0?"disabled":""}>← 1つ戻る</button>
+    <div class="spacer"></div>
+    <button class="btn" id="nextBtn" ${canNext?"":"disabled"}>${qi===total-1?"結果を見る":"次へ →"}</button>
+  </div>`;
+
+  if (STAGE){
+    html += `<div class="keyhint">キー操作： 1〜4 / A〜D で選ぶ ・ → か Enter で次へ ・ ← で戻る ・ R で最初から</div>`;
+  }
+
+  app.innerHTML = html;
+
+  app.querySelectorAll(".choice").forEach(btn => {
+    btn.addEventListener("click", () => selectChoice(qi, parseInt(btn.dataset.ci,10)));
+  });
+  const backBtn = document.getElementById("backBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  if (backBtn) backBtn.addEventListener("click", goBack);
+  if (nextBtn) nextBtn.addEventListener("click", goNext);
+
+  window.scrollTo(0,0);
+  updateFooter();
+}
+
+function selectChoice(qi, ci){
+  const Q = QUESTIONS[qi];
+  if (Q.multi){
+    let arr = Array.isArray(state.answers[qi]) ? state.answers[qi].slice() : [];
+    if (arr.includes(ci)){
+      arr = arr.filter(x => x !== ci);
+    } else {
+      if (arr.length >= (Q.max||99)) arr.shift(); // 上限超えたら古いのを外す
+      arr.push(ci);
+    }
+    state.answers[qi] = arr;
+    render();
+  } else {
+    state.answers[qi] = ci;
+    if (STAGE){
+      // 投影：選択をハイライトして表示（進行役が →/Enter で次へ）
+      render();
+    } else {
+      // 通常：軽くハイライトしてから自動で次へ
+      render();
+      setTimeout(() => { if (state.step === qi) goNext(); }, 280);
+    }
+  }
+}
+
+function goNext(){
+  const qi = state.step;
+  const Q = QUESTIONS[qi];
+  if (!Q.multi && state.answers[qi] == null) return; // 未選択なら進めない
+  state.step++;
+  render();
+}
+function goBack(){
+  if (state.step === 0) return;
+  state.step--;
+  render();
+}
+function reset(){
+  state.step = 0;
+  state.answers = [];
+  render();
+}
+
+/* =========================================================================
+   描画：結果画面
+   ========================================================================= */
+function renderResult(){
+  const profile = computeProfile();
+  const ranked = scoreJobs(profile);
+  const {top, hidden} = pickResults(ranked);
+
+  // 軸プロフィール
+  const maxV = Math.max(1, ...profile.vec);
+  const topAxisIdx = profile.vec.indexOf(Math.max(...profile.vec));
+  const topAxisName = AXES[topAxisIdx].name;
+
+  let html = `<div class="result">`;
+
+  html += `<h1>診断のけっか</h1>`;
+
+  // 1. 軸のプロフィール
+  html += `<h2>あなたの傾向</h2><div class="axes">`;
+  AXES.forEach((ax, i) => {
+    const w = Math.round(profile.vec[i] / maxV * 100);
+    html += `<div class="axis${i===topAxisIdx?" top":""}">
+      <span class="name">${ax.name}</span>
+      <span class="track"><i style="width:${w}%"></i></span>
+    </div>`;
+  });
+  html += `</div>`;
+  html += `<div class="summary">あなたは「${topAxisName}」が強めです。</div>`;
+
+  // 2. 向いているかもしれない仕事 3つ
+  html += `<h2>向いているかもしれない仕事 3つ</h2>`;
+  top.forEach(r => {
+    html += jobCard(r.job, reasonFor(profile, r.job), false);
+  });
+
+  // 3. 隠れた候補
+  if (hidden){
+    html += `<p class="hidden-lead">意外とこれも…？</p>`;
+    html += `<p class="hidden-sub">上位ではないけれど、あなたに合うかもしれない1つ。</p>`;
+    html += jobCard(hidden.job, reasonFor(profile, hidden.job), true);
+  }
+
+  // 4. 好きな世界との掛け算
+  if (profile.worlds.length){
+    html += `<h2>好きな世界 × 情報の力</h2><div class="world-box">`;
+    profile.worlds.forEach(w => {
+      html += `<p>${esc(w)} × ${topAxisName} の仕事があります。</p>`;
+    });
+    html += `<p style="font-weight:400;font-size:.85em;color:var(--sub);margin-top:6px;">好きな世界と情報技術は、どこかで必ずつながっています。</p>`;
+    html += `</div>`;
+  }
+
+  // Q11メモ（数学が得意でなくても）
+  html += `<p class="note">※ 数学がとくいでなくても、情報系の道はいろいろあります。今日の結果は入り口のひとつです。</p>`;
+
+  // 5. 紙で番号を探す誘導
+  html += `<div class="callout">配った紙で、この番号を探してみよう。くわしい説明がのっています。</div>`;
+
+  // 注記
+  html += `<p class="note">これは占いのようなものです。出なかった48個の中にも、あなたに合う仕事があります。</p>`;
+
+  // AI講評
+  if (AI){
+    html += `<div class="ai-box" id="aiBox">
+      <button class="btn grow" id="aiBtn" style="width:100%">AIに詳しく聞いてみる</button>
+      <p class="ai-note">※ AI機能は先生の端末での利用を想定しています。</p>
+    </div>`;
+  }
+
+  // 6. もう一度
+  html += `<div class="nav"><button class="btn grow" id="retryBtn">もう一度やる</button></div>`;
+
+  html += `</div>`;
+  app.innerHTML = html;
+
+  // 棒グラフのアニメーション（幅を再セット）
+  requestAnimationFrame(() => {
+    app.querySelectorAll(".axis .track>i").forEach((el, i) => {
+      const w = Math.round(profile.vec[i] / maxV * 100);
+      el.style.width = w + "%";
+    });
+  });
+
+  document.getElementById("retryBtn").addEventListener("click", reset);
+  if (AI){
+    document.getElementById("aiBtn").addEventListener("click", () => onAskAI(profile, top, topAxisName));
+  }
+  window.scrollTo(0,0);
+}
+
+function jobCard(job, reason, isHidden){
+  return `<div class="job${isHidden?" hidden":""}">
+    <div class="no"><span class="lbl">No.</span><span class="num">${job.id}</span></div>
+    <div class="body">
+      <span class="cat">${esc(job.cat)}</span>
+      <p class="jname">${esc(job.name)}</p>
+      <p class="desc">${esc(job.desc)}</p>
+      <p class="why">${esc(reason)}</p>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   AI講評（呼び出し部分は差し替え可能な単一関数に隔離）
+   ローカルや Cloudflare Workers 中継に差し替える場合は callAI() だけ直す。
+   ========================================================================= */
+async function callAI(apiKey, prompt){
+  // ここが唯一の外部API呼び出し。中継サーバ運用時はこの中身を差し替える。
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key":apiKey,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true",
+    },
+    body: JSON.stringify({
+      model:"claude-haiku-4-5-20251001",
+      max_tokens:400,
+      messages:[{role:"user", content:prompt}],
+    }),
+  });
+  if (!res.ok) throw new Error("API " + res.status);
+  const data = await res.json();
+  return (data.content && data.content[0] && data.content[0].text) || "";
+}
+
+function buildPrompt(profile, top, topAxisName){
+  const axisLine = AXES.map((a,i)=>`${a.name}:${profile.vec[i]}`).join(" / ");
+  const jobsLine = top.map(r=>`No.${r.job.id} ${r.job.name}（${r.job.cat}）`).join("、");
+  const worldsLine = profile.worlds.length ? profile.worlds.join("、") : "特になし";
+  return `あなたは高校の進路ガイダンスの案内役です。次の診断結果をもとに、高校生に向けて200字程度のやさしい講評文を書いてください。
+- 断定せず「入り口のひとつ」という姿勢で。
+- 出た仕事の面白さと、知らない仕事に出会う楽しさを伝える。
+- 専門用語は避け、あたたかい口調で。
+
+【5つの傾向スコア】${axisLine}（いちばん強いのは「${topAxisName}」）
+【向いているかもしれない仕事】${jobsLine}
+【好きな世界】${worldsLine}
+
+講評文だけを出力してください。`;
+}
+
+function getApiKey(){
+  return new Promise((resolve) => {
+    const stored = sessionStorage.getItem("ai_key");
+    if (stored){ resolve(stored); return; }
+    const dlg = document.getElementById("keyDlg");
+    const input = document.getElementById("keyInput");
+    input.value = "";
+    dlg.showModal();
+    const ok = document.getElementById("keyOk");
+    const cancel = document.getElementById("keyCancel");
+    const done = (val) => {
+      ok.onclick = null; cancel.onclick = null;
+      dlg.close();
+      resolve(val);
+    };
+    ok.onclick = () => {
+      const v = input.value.trim();
+      if (!v) return;
+      sessionStorage.setItem("ai_key", v);
+      done(v);
+    };
+    cancel.onclick = () => done(null);
+  });
+}
+
+async function onAskAI(profile, top, topAxisName){
+  const box = document.getElementById("aiBox");
+  const key = await getApiKey();
+  if (!key) return; // フォールバック：固定ロジックの結果だけで完結
+
+  box.innerHTML = `<h3>AIからのひとこと</h3>
+    <div class="skel"></div><div class="skel w80"></div><div class="skel w60"></div>
+    <p class="ai-note">考えています…</p>`;
+
+  try{
+    const text = await callAI(key, buildPrompt(profile, top, topAxisName));
+    box.innerHTML = `<h3>AIからのひとこと</h3><div class="ai-text">${esc(text.trim())}</div>
+      <p class="ai-note">AIが生成した文章です。参考程度に読んでください。</p>`;
+  }catch(e){
+    // 失敗時は固定ロジックの結果だけで完結
+    box.innerHTML = `<h3>AIからのひとこと</h3>
+      <p class="ai-err">うまく取得できませんでした（${esc(String(e.message||e))}）。上の診断結果はそのまま使えます。</p>
+      <button class="btn ghost" id="aiRetry" style="width:100%;margin-top:8px">もう一度ためす</button>`;
+    const r = document.getElementById("aiRetry");
+    if (r) r.addEventListener("click", () => onAskAI(profile, top, topAxisName));
+  }
+}
+
+/* =========================================================================
+   キーボード操作（投影モード）
+   ========================================================================= */
+document.addEventListener("keydown", (e) => {
+  if (!STAGE) return;
+  if (document.getElementById("keyDlg").open) return;
+
+  const k = e.key;
+  if (k === "r" || k === "R"){ e.preventDefault(); reset(); return; }
+
+  if (state.step >= QUESTIONS.length) return; // 結果画面ではナビのみ
+
+  if (k === "ArrowRight" || k === "Enter"){ e.preventDefault(); goNext(); return; }
+  if (k === "ArrowLeft"){ e.preventDefault(); goBack(); return; }
+
+  const Q = QUESTIONS[state.step];
+  let idx = -1;
+  if (k >= "1" && k <= "9") idx = parseInt(k,10) - 1;
+  else { const up = k.toUpperCase(); if (up>="A" && up<="Z") idx = up.charCodeAt(0) - 65; }
+  if (idx >= 0 && idx < Q.choices.length){
+    e.preventDefault();
+    selectChoice(state.step, idx);
+  }
+});
+
+/* =========================================================================
+   ユーティリティ
+   ========================================================================= */
+function esc(s){
+  return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+function updateFooter(){
+  const f = document.getElementById("modeFooter");
+  const bits = [];
+  if (STAGE) bits.push("投影モード");
+  if (AI) bits.push("AI講評あり");
+  f.textContent = bits.length ? bits.join(" ・ ") : "";
+}
+
+/* start */
+render();
+</script>
+</body>
+</html>
