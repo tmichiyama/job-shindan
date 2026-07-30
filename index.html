@@ -653,7 +653,6 @@ function renderResult(){
 
 function jobCard(job, reason, isHidden){
   return `<div class="job${isHidden?" hidden":""}">
-    <div class="no"><span class="lbl">No.</span><span class="num">${job.id}</span></div>
     <div class="body">
       <span class="cat">${esc(job.cat)}</span>
       <p class="jname">${esc(job.name)}</p>
