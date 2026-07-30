@@ -497,13 +497,14 @@ function render(){
   });
   html += `</div>`;
 
-  // ナビ
-  const canNext = Q.multi ? true : (ans != null);
+  // ナビ（単一選択は「次へ」を省略：通常は自動で進み、投影は →/Enter で進む）
   html += `<div class="nav">
     <button class="btn ghost" id="backBtn" ${qi===0?"disabled":""}>← 1つ戻る</button>
-    <div class="spacer"></div>
-    <button class="btn" id="nextBtn" ${canNext?"":"disabled"}>${qi===total-1?"結果を見る":"次へ →"}</button>
-  </div>`;
+    <div class="spacer"></div>`;
+  if (Q.multi){
+    html += `<button class="btn" id="nextBtn">${qi===total-1?"結果を見る":"次へ →"}</button>`;
+  }
+  html += `</div>`;
 
   if (STAGE){
     html += `<div class="keyhint">キー操作： 1〜4 / A〜D で選ぶ ・ → か Enter で次へ ・ ← で戻る ・ R で最初から</div>`;
