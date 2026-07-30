@@ -120,10 +120,7 @@
     border:2px solid var(--line);border-radius:16px;
     padding:14px 16px;margin:12px 0;
     display:flex;gap:14px;align-items:flex-start;
-    cursor:pointer;position:relative;transition:border-color .12s ease,box-shadow .12s ease;
   }
-  .job:hover{border-color:var(--main-soft);}
-  .job:focus-visible{outline:3px solid var(--main-soft);outline-offset:2px;}
   .job .no{
     flex:none;text-align:center;line-height:1.1;
   }
@@ -134,14 +131,7 @@
   .job .cat{display:inline-block;font-size:.72em;color:var(--main);background:var(--pale);border-radius:99px;padding:2px 10px;margin-bottom:6px;}
   .job .desc{font-size:.92em;margin:2px 0;}
   .job .why{font-size:.82em;color:var(--sub);margin-top:6px;}
-  .job .job-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9em;line-height:1.7;}
-  .job.open .job-detail{display:block;}
-  .job .job-toggle{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-size:.76em;color:var(--main-soft);font-weight:700;}
-  .job .job-toggle .chev{transition:transform .2s ease;}
-  .job.open .job-toggle .chev{transform:rotate(180deg);}
-  .job .job-toggle .on{display:none;}
-  .job.open .job-toggle .off{display:none;}
-  .job.open .job-toggle .on{display:inline;}
+  .job .job-detail{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9em;line-height:1.7;}
   .job.hidden{border-style:dashed;border-color:var(--main-soft);background:#fbfdff;}
   .hidden-lead{font-weight:700;color:var(--main);margin:22px 0 2px;}
   .hidden-sub{font-size:.85em;color:var(--sub);margin:0 0 4px;}
@@ -739,20 +729,6 @@ function renderResult(){
   });
 
   document.getElementById("retryBtn").addEventListener("click", reset);
-
-  // 職種カード：クリック／Enter・Spaceで詳細を開閉
-  app.querySelectorAll(".job").forEach(card => {
-    if (!card.querySelector(".job-detail")) return;
-    const toggle = () => {
-      const open = card.classList.toggle("open");
-      card.setAttribute("aria-expanded", open ? "true" : "false");
-    };
-    card.addEventListener("click", toggle);
-    card.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); }
-    });
-  });
-
   const allBtn = document.getElementById("allBtn");
   allBtn.addEventListener("click", () => {
     const wrap = document.getElementById("allWrap");
@@ -769,14 +745,13 @@ function renderResult(){
 
 function jobCard(job, reason, isHidden){
   const detail = DETAILS[job.id] || "";
-  return `<div class="job${isHidden?" hidden":""}" tabindex="0" role="button" aria-expanded="false">
+  return `<div class="job${isHidden?" hidden":""}">
     <div class="body">
       <span class="cat">${esc(job.cat)}</span>
       <p class="jname">${esc(job.name)}</p>
       <p class="desc">${esc(job.desc)}</p>
       <p class="why">${esc(reason)}</p>
-      ${detail?`<div class="job-detail">${esc(detail)}</div>
-      <span class="job-toggle"><span class="off">タップで詳しく</span><span class="on">閉じる</span><b class="chev">▾</b></span>`:""}
+      ${detail?`<div class="job-detail">${esc(detail)}</div>`:""}
     </div>
   </div>`;
 }
