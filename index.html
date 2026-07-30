@@ -120,7 +120,10 @@
     border:2px solid var(--line);border-radius:16px;
     padding:14px 16px;margin:12px 0;
     display:flex;gap:14px;align-items:flex-start;
+    cursor:pointer;position:relative;transition:border-color .12s ease,box-shadow .12s ease;
   }
+  .job:hover{border-color:var(--main-soft);}
+  .job:focus-visible{outline:3px solid var(--main-soft);outline-offset:2px;}
   .job .no{
     flex:none;text-align:center;line-height:1.1;
   }
@@ -131,6 +134,14 @@
   .job .cat{display:inline-block;font-size:.72em;color:var(--main);background:var(--pale);border-radius:99px;padding:2px 10px;margin-bottom:6px;}
   .job .desc{font-size:.92em;margin:2px 0;}
   .job .why{font-size:.82em;color:var(--sub);margin-top:6px;}
+  .job .job-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9em;line-height:1.7;}
+  .job.open .job-detail{display:block;}
+  .job .job-toggle{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-size:.76em;color:var(--main-soft);font-weight:700;}
+  .job .job-toggle .chev{transition:transform .2s ease;}
+  .job.open .job-toggle .chev{transform:rotate(180deg);}
+  .job .job-toggle .on{display:none;}
+  .job.open .job-toggle .off{display:none;}
+  .job.open .job-toggle .on{display:inline;}
   .job.hidden{border-style:dashed;border-color:var(--main-soft);background:#fbfdff;}
   .hidden-lead{font-weight:700;color:var(--main);margin:22px 0 2px;}
   .hidden-sub{font-size:.85em;color:var(--sub);margin:0 0 4px;}
@@ -380,6 +391,61 @@ const JOBS = [
   {id:50, name:"高校「情報」の先生", cat:"社会の中で", v:[1,1,1,3,3], team:4, worlds:["教育"], desc:"情報の楽しさを教える"},
   {id:51, name:"大学教員・研究者", cat:"社会の中で", v:[2,3,0,2,3], team:1, worlds:["宇宙・天文","教育"], desc:"新しい技術を研究する"},
 ];
+
+/* 各職種の詳しい説明（結果カードをタップすると表示）。id と対応。 */
+const DETAILS = {
+  1:"システム全体の設計図をかき、必要な機能や規模を決めてチームで開発を進める。お客さんの「こうしたい」を技術に翻訳する橋渡し役。",
+  2:"設計をもとに実際のコードを書き、動くソフトウェアにする。エラーを直しながら、速く正しく動くように仕上げていく。",
+  3:"WebサイトやWebサービスを、見た目も裏側の仕組みも作る。たくさんの人が同時に使っても止まらないよう工夫する。",
+  4:"iPhoneやAndroidのアプリを設計・開発する。指で操作する使いやすさや、通知・カメラなどの機能まで考える。",
+  5:"ゲームのキャラの動き・当たり判定・スコアなどをプログラムする。面白さと、動作の軽さの両方を追い求める。",
+  6:"家電・自動車・ロボットなど「機械の中」で動くソフトを作る。限られた性能でも確実に動かす技術が求められる。",
+  7:"インターネットや社内ネットの通信経路を設計・管理する。世界中がつながり続ける、安定した土台を支える。",
+  8:"サーバーやネットワークなどITの土台を作り、止まらないよう運用する。表には出ないが、あらゆるサービスの基盤。",
+  9:"AWSなどのクラウド上にシステムを構築する。必要な分だけ増やしたり減らしたりできる、柔軟な仕組みを設計する。",
+  10:"大量のデータを、速く・安全に取り出せるよう整理して保管する。壊れない・漏らさない設計が何より大切。",
+  11:"自社の社員が使うシステムやパソコン環境を整え、トラブルに対応する。会社のIT全般を見る、頼れる相談役。",
+  12:"使い方に困った人からの問い合わせに答え、問題を解決する。技術力と、分かりやすく伝える力の両方が要る。",
+  13:"サイバー攻撃を防ぐ仕組みを設計・運用する。守りの最前線で、システムと大切な情報を守り抜く。",
+  14:"許可を得てわざとシステムを攻撃し、弱点を見つけて報告する。悪用される前に穴をふさぐ、正義のハッカー。",
+  15:"ネットワークを24時間監視し、攻撃の兆候をいち早く見つけて対応する。小さな異変も見逃さない観察力が武器。",
+  16:"事件で使われた機器からデータを取り出し、証拠として解析する。消されたデータを復元することもある。",
+  17:"大量のデータを統計やAIで分析し、ビジネスや研究の答えを導く。数字の中から、価値ある発見を掘り当てる。",
+  18:"売上や利用者のデータを分析し、「次はどうすべきか」を提案する。数字を根拠に、判断を後押しする。",
+  19:"分析に使えるよう、データを集め・整え・流れる仕組みを作る。データ活用を支える土台づくりの専門家。",
+  20:"AIに大量のデータを学ばせ、予測や判定ができるモデルを作る。少しでも賢くなるよう工夫を重ねる。",
+  21:"AIを使ったサービスを、設計から開発まで手がける。最新のAI技術を、実際に使える製品へと仕上げる。",
+  22:"写真や映像をコンピュータに解析させる技術を作る。医療画像の診断支援や、宇宙・天体の観測にも使われる。",
+  23:"人間の言葉をAIに理解・生成させる技術を作る。翻訳、チャットAI、文章の要約などを陰で支える。",
+  24:"試合や選手のデータを分析し、戦術やトレーニングに活かす。プロ野球やJリーグのチームを裏から支える。",
+  25:"eスポーツの試合データを分析し、勝つための戦略を立てる。ゲームを“数字”で読み解く新しい仕事。",
+  26:"スマホの電波が届く範囲や品質を計算し、基地局を配置する。どこでもつながる社会を足元から支える。",
+  27:"高速で大容量の光通信網を、どう張り巡らせるか設計する。動画も一瞬で届く、通信の“道”を作る。",
+  28:"人工衛星を経由した通信を設計・運用する。山や海、災害時など、地上の回線が届かない場所をつなぐ。",
+  29:"電波の性質を活かして無線通信を設計する。混信を避けながら、限りある電波を上手に使い分ける。",
+  30:"テレビやラジオの映像・音声を、安定して届ける技術を担う。生放送やスポーツ中継の裏側を支える。",
+  31:"どんなゲームを作るかを企画し、面白さのルールを設計する。開発チームに「作りたい体験」を伝える。",
+  32:"3DCGで映像やキャラクター、世界そのものを作る。アニメ・映画・ゲームの華やかな映像表現を担う。",
+  33:"場面に合わせて音楽や効果音が鳴る仕組みをプログラムする。音で臨場感や気持ちよさを生み出す。",
+  34:"仮想現実(VR)や拡張現実(AR)の体験を作る。ゲームだけでなく、教育や訓練など新しい使い方を切り開く。",
+  35:"コンサートやスポーツのライブ配信を、途切れず高画質で届ける技術を支える。“その場の熱”を遠くへ運ぶ。",
+  36:"アプリやサイトの「使いやすさ」を設計する。迷わず、気持ちよく使える画面や操作の流れを考える。",
+  37:"Webサイトの見た目・色・レイアウトをデザインする。伝えたいことがきちんと伝わる画面を作る。",
+  38:"製品を「何のために・誰に・どう作るか」を決めて引っ張る。技術・利用者・事業をつなぐ司令塔。",
+  39:"開発のスケジュール・人・予算を管理し、計画どおり完成へ導く。チームをまとめる進行役。",
+  40:"企業の課題を聞き取り、ITでどう解決するかを提案する。経営と技術の間に立つ橋渡し役。",
+  41:"ネット広告やSNS、データを使って商品やサービスを広める。数字を見ながら効果をどんどん高めていく。",
+  42:"工場や生活の中で動くロボットを設計・製作する。センサーやプログラムで、賢く正確に動かす。",
+  43:"車が自分で周囲を認識し、安全に走る仕組みを開発する。AI・センサー・制御技術を組み合わせる。",
+  44:"ドローンを操縦・運用し、空撮・測量・農業・防災などに活かす。安全な飛行計画づくりも大事な仕事。",
+  45:"判定システムやウェアラブル機器など、技術でスポーツを進化させる製品を作る。競技と技術の交差点。",
+  46:"病院の電子カルテや医療システムを支え、安全に運用する。医療とITの両方が分かる専門家。",
+  47:"地図と位置情報のデータを扱い、防災・都市計画・物流などに活かす。“地理×データ”の専門家。",
+  48:"センサーやデータ、AIを使って農業を効率化する。スマート農業で、収穫量や品質を高めていく。",
+  49:"市役所・県庁の手続きやサービスをデジタル化し、住民が使いやすい行政をつくる。",
+  50:"高校で情報の授業を教える。プログラミングやデータ活用の楽しさと大切さを、次の世代に伝える。",
+  51:"大学で新しい技術や理論を研究し、論文で発表しながら学生を育てる。まだ誰も知らない“未知”を切り開く。",
+};
 
 /* 軸のキーと表示名 */
 const AXES = [
@@ -673,6 +739,20 @@ function renderResult(){
   });
 
   document.getElementById("retryBtn").addEventListener("click", reset);
+
+  // 職種カード：クリック／Enter・Spaceで詳細を開閉
+  app.querySelectorAll(".job").forEach(card => {
+    if (!card.querySelector(".job-detail")) return;
+    const toggle = () => {
+      const open = card.classList.toggle("open");
+      card.setAttribute("aria-expanded", open ? "true" : "false");
+    };
+    card.addEventListener("click", toggle);
+    card.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); }
+    });
+  });
+
   const allBtn = document.getElementById("allBtn");
   allBtn.addEventListener("click", () => {
     const wrap = document.getElementById("allWrap");
@@ -688,12 +768,15 @@ function renderResult(){
 }
 
 function jobCard(job, reason, isHidden){
-  return `<div class="job${isHidden?" hidden":""}">
+  const detail = DETAILS[job.id] || "";
+  return `<div class="job${isHidden?" hidden":""}" tabindex="0" role="button" aria-expanded="false">
     <div class="body">
       <span class="cat">${esc(job.cat)}</span>
       <p class="jname">${esc(job.name)}</p>
       <p class="desc">${esc(job.desc)}</p>
       <p class="why">${esc(reason)}</p>
+      ${detail?`<div class="job-detail">${esc(detail)}</div>
+      <span class="job-toggle"><span class="off">タップで詳しく</span><span class="on">閉じる</span><b class="chev">▾</b></span>`:""}
     </div>
   </div>`;
 }
